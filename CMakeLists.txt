@@ -1,0 +1,52 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.15)
+PROJECT(log4c C)
+
+SET(CMAKE_C_STANDARD 99)
+SET(CMAKE_C_STANDARD_REQUIRED ON)
+SET(CMAKE_C_EXTENSIONS OFF)
+
+# 库目标（静态库）
+ADD_LIBRARY(log4c src/log4c.c)
+
+# 设置 include 目录
+TARGET_INCLUDE_DIRECTORIES(
+  log4c PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+               $<INSTALL_INTERFACE:include>)
+
+# 安装规则
+INCLUDE(GNUInstallDirs)
+
+# 安装头文件
+INSTALL(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# 安装库文件
+INSTALL(
+  TARGETS log4c
+  EXPORT log4c-targets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} # .a / .lib
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # .so / .dylib（如果 shared）
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # .dll（Windows）
+)
+
+# 生成并安装 CMake 配置文件（用于 find_package）
+INCLUDE(CMakePackageConfigHelpers)
+
+CONFIGURE_PACKAGE_CONFIG_FILE(
+  "${CMAKE_CURRENT_SOURCE_DIR}/log4c-config.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/log4c-config.cmake"
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/log4c)
+
+WRITE_BASIC_PACKAGE_VERSION_FILE(
+  "${CMAKE_CURRENT_BINARY_DIR}/log4c-config-version.cmake"
+  VERSION 1.0.0
+  COMPATIBILITY SameMajorVersion)
+
+INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/log4c-config.cmake"
+              "${CMAKE_CURRENT_BINARY_DIR}/log4c-config-version.cmake"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/log4c)
+
+INSTALL(
+  EXPORT log4c-targets
+  FILE log4c-targets.cmake
+  NAMESPACE log4c::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/log4c)
